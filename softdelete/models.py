@@ -52,9 +52,7 @@ class SoftDeleteQuerySet(query.QuerySet):
                 related_field = k.split("__")[0]
                 print("related field: ", related_field)
                 try:
-                    related_model = self.model.related_field.first()._meta.get_field(
-                        "deleted_at"
-                    )
+                    related_model = getattr(self.model, related_field).all_with_deleted().first()._meta.get_field("deleted_at")
                     print("related model: ", related_model)
 
                     if related_model:
