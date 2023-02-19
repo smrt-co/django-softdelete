@@ -54,7 +54,7 @@ class SoftDeleteQuerySet(query.QuerySet):
                 related_field = k.split("__")[0]
                 print("related field: ", related_field)
                 try:
-                    related_model = getattr(self.model, related_field).field.model._meta
+                    related_model = self.model._meta.get_field(related_field).remote_field.model._meta
                     print("related model: ", related_model)
                     if related_model:
                         deleted_at = apps.get_model(app_label=related_model.app_label, model_name=related_model.model_name).deleted_at
