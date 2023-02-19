@@ -15,6 +15,8 @@ except ImportError:
 from django.contrib.auth.models import Group, Permission
 from django.utils import timezone
 import logging
+from django.apps import apps
+
 from softdelete.signals import *
 
 try:
@@ -52,12 +54,14 @@ class SoftDeleteQuerySet(query.QuerySet):
                 related_field = k.split("__")[0]
                 print("related field: ", related_field)
                 try:
-                    related_model = getattr(self.model, related_field).all_with_deleted().first()._meta.get_field("deleted_at")
+                    related_model = getattr(self.model, related_field).field.model._meta
                     print("related model: ", related_model)
-
                     if related_model:
-                        kwargs[related_field + "__deleted_at__isnull"] = True
-                        print("added: ", kwargs[related_field + "__deleted_at__isnull"])
+                        deleted_at = apps.get_model(app_label=related_model.app_label, model_name=related_model.model_name).deleted_at
+                        print("deleted_at:", deleted_at)
+                        if deleted_at:
+                            kwargs[related_field + "__deleted_at__isnull"] = True
+                            print("added: ", kwargs[related_field + "__deleted_at__isnull"])
                 except:
                     pass
         return super(SoftDeleteQuerySet, self).filter(*args, **kwargs)
